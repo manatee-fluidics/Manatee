@@ -6,16 +6,16 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVB
     QComboBox, QGridLayout, QDesktopWidget
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui, QtCore
-
+import glob
 import Manatee_main
 
 
 class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
     """Creates Main Window with all functions."""
-    def __init__(self, queue_send):  # this will run whenever we create an instance of the MainWindow class
+    def __init__(self, MT_queue):  # this will run whenever we create an instance of the MainWindow class
         super(MainWindow, self).__init__()  # parent constructor
 
-        self.queue_send = queue_send
+        self.MT_queue = MT_queue
         # QMainWindow has a central widget that is a container for widgets, it has its own layout
         # create cw, set layout and alignment
         self.setCentralWidget(QWidget(self))
@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
 
         # call layout elements
         self.logo = Logo()
-        self.connections = Connections(self, queue_send)
+        self.connections = Connections(self, MT_queue)
 
         # add layout elements to cw - name, alignment
         cw_layout.addWidget(self.logo, Qt.AlignCenter)
@@ -64,10 +64,10 @@ class Logo(QLabel):
 class Connections(QWidget):
     """Connection panel. Displays refresh button, available ports in dropdown menu, connect button
     and textbox which let's the user know about what the program is doing."""
-    def __init__(self, main_window2, queue_send):
+    def __init__(self, main_window2, MT_queue):
         super(Connections, self).__init__()
 
-        self.queue_send = queue_send
+        self.MT_queue = MT_queue
         self.main_window = main_window2
         self.conn_layout = QGridLayout(self)
 
@@ -107,11 +107,12 @@ class Connections(QWidget):
         connection_list = self.serial_ports()
         for port in connection_list:
             self.dropdown.addItem(port)
-            print(port)  # just to check when list refreshes, otherwise can be commented out
+            #print(port)  # just to check when list refreshes, otherwise can be commented out
         self.textbox.setText("List refreshed")
 
     def connect_click(self):
         self.textbox.setText("Connecting to port...")
+        self.MT_queue.put(["FromGUI_ConnectSerial", [self.dropdown.currentText(), 250000]])
         #pass arguments
         #self.ManateeBackend.connect(self.dropdown.currentText(), 250000)
         
@@ -150,12 +151,15 @@ class Connections(QWidget):
         return result
 
 
-def window(queue_send):
+def window(MT_queue):
     app = QApplication(sys.argv)
-    win = MainWindow(queue_send)
+    win = MainWindow(MT_queue)
     win.show()  # shows window
     sys.exit(app.exec_())  # clean exit when we close the window
+    
 
 if __name__ == "__main__":
-    queue_send = mp.Queue()
-    window(queue_send)
+    MT_queue = mp.Queue()
+    window(MT_queue)
+    
+    

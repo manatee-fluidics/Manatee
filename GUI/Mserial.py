@@ -464,7 +464,7 @@ changeSetting(pumpAddress, settingAddress, value)  0x35,
 
 
 class M_serial():
-    def __init__(self, queue_in, queue_out):
+    def __init__(self, MT_queue):
         self.hex_codes = {
                   #message bytes
                   "START_BYTE" : b'\xaa',
@@ -504,8 +504,7 @@ class M_serial():
                   "reset" : b'\x49'}     #add codes for responses?
 
         self.ser = None
-        self.queue_in = queue_in
-        self.queue_out = queue_out
+        self.MT_queue = MT_queue
         self.flags = [] #need to implement
         self.pumps = []
         self.serial_buffer = b''
@@ -726,27 +725,27 @@ class M_serial():
                     settingAddress = int(line[3]%11)
                     value = np.float32(struct.unpack("f", line[4:8]))[0]
                     self.settings[self.machine_setting_link[settingAddress]][pumpAddress] = value
-                    self.queue_out.put(["FromController_Settings", self.settings])
+                    self.MT_queue.put(["FromController_Settings", self.settings])
                     
                 elif line[2] == self.hex_codes["getPosition"][0]:
                     pumpAddress = int(line[3])
                     value = np.float32(struct.unpack("f", line[4:8]))[0]
-                    self.queue_out.put(["FromController_Position", [pumpAddress, value]])
+                    self.MT_queue.put(["FromController_Position", [pumpAddress, value]])
 
                 elif line[2] == self.hex_codes["getSpeed"][0]:
                     pumpAddress = int(line[3])
                     value = np.float32(struct.unpack("f", line[4:8]))[0]
-                    self.queue_out.put(["FromController_Speed", [pumpAddress, value]])
+                    self.MT_queue.put(["FromController_Speed", [pumpAddress, value]])
 
                 elif line[2] == self.hex_codes["getPressure"][0]:
                     pumpAddress = int(line[3])
                     value = np.float32(struct.unpack("f", line[4:8]))[0]
-                    self.queue_out.put(["FromController_Pressure", [pumpAddress, value]])
+                    self.MT_queue.put(["FromController_Pressure", [pumpAddress, value]])
                     
                 elif line[2] == self.hex_codes["commandsBuffered"][0]:
                     pumpAddress = int(line[3])
                     value = np.float32(struct.unpack("f", line[4:8]))[0]
-                    self.queue_out.put(["FromController_Buffer", [pumpAddress, value]])
+                    self.MT_queue.put(["FromController_Buffer", [pumpAddress, value]])
 
                 elif line[2] == self.hex_codes["sendToSlave"][0]:
                     slaveAddress = int(line[3])
@@ -759,9 +758,7 @@ class M_serial():
                         device = "8 bit multipinch board"
                         
                     self.I2C[slaveAddress] = device
-                    self.queue_out.put(["FromController_I2C", self.I2C])
-                    
-
+                    self.MT_queue.put(["FromController_I2C", self.I2C])
 
                 self.serial_buffer = self.serial_buffer[13:]
             else:
@@ -773,107 +770,109 @@ class M_serial():
             #handle commands coming from threads
             try:
                 while True:
-                    command, q_data = self.queue.get_nowait()
-                    #print "from gui: " + line
-                    if command == "Serial_Connect":
-                        self.connect(q_data[0], int(q_data[1]))
-
-                    elif command == "Serial_Disconnect":
-                        self.disconnect()
-
-                    elif command == "Serial_SendSerial":
-                        self.send_serial(q_data)
-
-                    if command == "Serial_Target":
-                        self.set_target(int(q_data[0]), float(q_data[1]))
-                    
-                    elif command == "Serial_GetPressure":
-                        self.get_pressure(int(q_data))
-                    
-                    elif command == "Serial_GetPosition":
-                        self.get_position(int(q_data))
-                    
-                    elif command == "Serial_GetSpeed":
-                        self.get_speed(int(q_data))
-                    
-                    elif command == "Serial_Home":
-                        self.home(int(q_data[0]), int(q_data[1]))                        
-
-                    elif command == "Serial_StartAdjust":
-                        self.regulate(int(q_data[0]), 1)
-                            
-                    elif command == "Serial_StopAdjust":
-                        self.regulate(int(q_data[0]), 0)
-
-                    elif command == "Serial_StartConstant":
-                        self.move_constant(int(q_data[0]), 1)
-                            
-                    elif command == "Serial_StopConstant":
-                        self.move_constant(int(q_data[0]), 0)
-                            
-                    elif command == "Serial_Solenoid":
-                        self.set_valve(int(q_data[0]), int(q_data[1]))                        
-
-                    elif command == "Serial_Speed":
-                        self.set_speed(int(q_data[0]), float(q_data[1]))                        
-                            
-                    elif command == "Serial_MoveRel":
-                        self.set_position_rel(int(q_data[0]), float(q_data[1]))
-
-                    elif command == "Serial_MoveAbs":
-                        self.set_position_abs(int(q_data[0]), float(q_data[1]))
-
-                    elif command == "Serial_SendSetting":
-                        self.change_setting(int(q_data[0]), int(q_data[1]), float(q_data[2]))
-
-                    elif command == "Serial_GetSettings":
-                        self.read_settings()
-
-                    elif command == "Serial_SendSlave":
-                        #slaveaddress = int(line.split(" ")[1])
-                        #command = int(line.split(" ")[2])
-                        #data = [int(x) for x in line.split(" ")[3:6]]
-                        self.send_to_slave(int(q_data[0]), int(q_data[1]), q_data[2])
-
-                    elif command == "Serial_CommandsBuffered":
-                        self.commands_buffered(int(q_data[0]))
-
-                    elif command == "Serial_StartCycle":
-                        self.start_cycle(int(q_data[0]))
-
-                    elif command == "Serial_StopCycle":
-                        self.stop_cycle()
-
-                    elif command == "Serial_ActivateAlarm":
-                        self.activate_alarm(int(q_data[0]), int(q_data[1]), int(q_data[2]))
-
-                    elif command == "Serial_SetAlarmValue":
-                        self.set_alarm_value(int(q_data[0]), int(q_data[1]), float(q_data[2]))
-
-                    elif command == "Serial_SetAlarmAction":
-                        self.set_alarm_action(int(q_data[0]), int(q_data[1]), int(q_data[2]))
-
-                    elif command == "Serial_SoundAlarm":
-                        self.sound_alarm(int(q_data[0]))
-
-                    elif command == "Serial_Upload":
-                        self.upload(int(q_data[0]))
-
-                    elif command == "Serial_Online":
-                        self.online(int(q_data[0]))
-                        #print("online")
-
-                    elif command == "Serial_WaitTime":
-                        self.wait_time(float(q_data[0]))
-
-                    elif command == "Serial_WaitSlave":
-                        self.wait_slave(int(q_data[0]), int(q_data[1]))
-
-                    elif command == "Serial_WaitVolume":
-                        self.wait_volume(int(q_data[0]), float(q_data[1]))
+                    command, q_data = self.MT_queue.get_nowait()
+                    #print (command, q_data)
+                    if "Serial_" in command:
+                        print ("Serial processing ")
+                        if command == "Serial_Connect":
+                            self.connect(q_data[0], int(q_data[1]))
+    
+                        elif command == "Serial_Disconnect":
+                            self.disconnect()
+    
+                        elif command == "Serial_SendSerial":
+                            self.send_serial(q_data)
+    
+                        if command == "Serial_Target":
+                            self.set_target(int(q_data[0]), float(q_data[1]))
+                        
+                        elif command == "Serial_GetPressure":
+                            self.get_pressure(int(q_data))
+                        
+                        elif command == "Serial_GetPosition":
+                            self.get_position(int(q_data))
+                        
+                        elif command == "Serial_GetSpeed":
+                            self.get_speed(int(q_data))
+                        
+                        elif command == "Serial_Home":
+                            self.home(int(q_data[0]), int(q_data[1]))                        
+    
+                        elif command == "Serial_StartAdjust":
+                            self.regulate(int(q_data[0]), 1)
+                                
+                        elif command == "Serial_StopAdjust":
+                            self.regulate(int(q_data[0]), 0)
+    
+                        elif command == "Serial_StartConstant":
+                            self.move_constant(int(q_data[0]), 1)
+                                
+                        elif command == "Serial_StopConstant":
+                            self.move_constant(int(q_data[0]), 0)
+                                
+                        elif command == "Serial_Solenoid":
+                            self.set_valve(int(q_data[0]), int(q_data[1]))                        
+    
+                        elif command == "Serial_Speed":
+                            self.set_speed(int(q_data[0]), float(q_data[1]))                        
+                                
+                        elif command == "Serial_MoveRel":
+                            self.set_position_rel(int(q_data[0]), float(q_data[1]))
+    
+                        elif command == "Serial_MoveAbs":
+                            self.set_position_abs(int(q_data[0]), float(q_data[1]))
+    
+                        elif command == "Serial_SendSetting":
+                            self.change_setting(int(q_data[0]), int(q_data[1]), float(q_data[2]))
+    
+                        elif command == "Serial_GetSettings":
+                            self.read_settings()
+    
+                        elif command == "Serial_SendSlave":
+                            #slaveaddress = int(line.split(" ")[1])
+                            #command = int(line.split(" ")[2])
+                            #data = [int(x) for x in line.split(" ")[3:6]]
+                            self.send_to_slave(int(q_data[0]), int(q_data[1]), q_data[2])
+    
+                        elif command == "Serial_CommandsBuffered":
+                            self.commands_buffered(int(q_data[0]))
+    
+                        elif command == "Serial_StartCycle":
+                            self.start_cycle(int(q_data[0]))
+    
+                        elif command == "Serial_StopCycle":
+                            self.stop_cycle()
+    
+                        elif command == "Serial_ActivateAlarm":
+                            self.activate_alarm(int(q_data[0]), int(q_data[1]), int(q_data[2]))
+    
+                        elif command == "Serial_SetAlarmValue":
+                            self.set_alarm_value(int(q_data[0]), int(q_data[1]), float(q_data[2]))
+    
+                        elif command == "Serial_SetAlarmAction":
+                            self.set_alarm_action(int(q_data[0]), int(q_data[1]), int(q_data[2]))
+    
+                        elif command == "Serial_SoundAlarm":
+                            self.sound_alarm(int(q_data[0]))
+    
+                        elif command == "Serial_Upload":
+                            self.upload(int(q_data[0]))
+    
+                        elif command == "Serial_Online":
+                            self.online(int(q_data[0]))
+                            #print("online")
+    
+                        elif command == "Serial_WaitTime":
+                            self.wait_time(float(q_data[0]))
+    
+                        elif command == "Serial_WaitSlave":
+                            self.wait_slave(int(q_data[0]), int(q_data[1]))
+    
+                        elif command == "Serial_WaitVolume":
+                            self.wait_volume(int(q_data[0]), float(q_data[1]))
 
                     else:                                                   #if it's stuff we don't handle put it back
-                        self.queue.put([command, q_data])
+                        self.MT_queue.put([command, q_data])
             except:
                 pass
             
