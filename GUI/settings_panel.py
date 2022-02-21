@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
     def initUI(self):
         """Initializes the Main window with all the attributes specified below."""
 
-        self.setWindowTitle("Manatee Fluidics")
+        self.setWindowTitle("Settings")
         self.setWindowIcon(QIcon("manatee_icon_square.png"))
         # self.setGeometry(1300, 200, 1000, 1500)
         # xpos, ypos, width, height (in pixels)
@@ -232,24 +232,28 @@ class Buttons(QWidget):
         self.button_save = QPushButton()
         self.button_save.setText("Upload settings")
         self.button_save.setFixedSize(100, 38)  # width, height
-        # self.button_save.clicked.connect()
+        self.button_save.clicked.connect(lambda: refresh_settings())
 
         self.buttons_layout.addWidget(self.button_save)
 
 
+def refresh_settings(self):
+    return None
+
+
 # if __name__ == "__main__":
 def window():
-    controller_settings = {  'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
-                             'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
-                             'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
-                             'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
-                             'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
-                             'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
-                             'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
-                             'active': [1.0, 1.0, 1.0, 1.0, 1.0],
-                             'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
-                             'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
-                             'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
+    controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
+                           'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
+                           'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
+                           'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
+                           'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
+                           'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
+                           'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
+                           'active': [1.0, 1.0, 1.0, 1.0, 1.0],
+                           'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
+                           'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
+                           'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
 
     app = QApplication(sys.argv)
     win = MainWindow(controller_settings)
