@@ -203,7 +203,7 @@ class Pump(QWidget):
         self.prcb_value.setValidator(self.validator)
         self.prcb_value.setText(str(self.settings[9]))
 
-            #later use
+        # later use
         # self.su_value = QLineEdit()
         # self.su_value.setToolTip("Sensor unit")
         # self.su_value.setValidator(self.validator)
@@ -220,7 +220,7 @@ class Pump(QWidget):
         self.pump_layout.addWidget(self.chl_value)
         self.pump_layout.addWidget(self.prca_value)
         self.pump_layout.addWidget(self.prcb_value)
-        #self.pump_layout.addWidget(self.su_value)
+        # self.pump_layout.addWidget(self.su_value)
 
 
 class Buttons(QWidget):
@@ -234,30 +234,12 @@ class Buttons(QWidget):
         self.button_save.setFixedSize(100, 38)  # width, height
         # self.button_save.clicked.connect()
 
-        self.button_refresh = QPushButton()
-        self.button_refresh.setIcon(QtGui.QIcon("refresh_icon.png"))
-        self.button_refresh.setIconSize(QtCore.QSize(30, 30))
-        self.button_refresh.setToolTip("Refresh")
-        # self.button_save.clicked.connect()
-        # self.button_refresh.setFixedSize(40, 40)
-        # self.button_refresh.clicked.connect(lambda: self.refresh_click())  # or self.refresh_click
-
         self.buttons_layout.addWidget(self.button_save)
-        self.buttons_layout.addWidget(self.button_refresh)
-
-
-# def verify_settings_values(dict):
-#     try:
-#         if len(dict) == 11 and len(dict['Kp']) == len(dict['Ki']) and len(dict['Kd']) and len(dict['motor_cal']) and
-#             len(dict['syringe_cal']) and  len(dict[]) and len(dict[]) and len(dict[]) and len(dict[]) and len(dict[])
-#             and len(dict[]) and len(dict[]):
-#     else:
-#         pass
 
 
 # if __name__ == "__main__":
 def window():
-    controller_settings = {  'Kps': [0, 0.1, 0.1, 0.1, 0.1],
+    controller_settings = {  'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
                              'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
                              'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
                              'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
