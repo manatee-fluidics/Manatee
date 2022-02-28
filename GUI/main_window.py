@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtGui import QIcon, QDoubleValidator
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVBoxLayout, QLabel, QGridLayout, \
-    QDesktopWidget, QLineEdit, QHBoxLayout, QCheckBox, QGroupBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QGridLayout, QDesktopWidget, \
+    QLineEdit, QHBoxLayout, QGroupBox
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui, QtCore
 
@@ -27,15 +27,16 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         self.terminal = Terminal()
 
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
-        self.cw_layout.addWidget(self.buttonbar, 0, 0, 1, -1, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.controls, 1, 0, 1, -1, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.graph, 10, 0, 8, 3, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.terminal, 10, 3, 8, 2, Qt.AlignLeft)
+        self.cw_layout.addWidget(self.buttonbar, 0, 0, 1, 20, Qt.AlignLeft)
+        self.cw_layout.addWidget(self.controls, 1, 0, 1, 20, Qt.AlignLeft)
+        self.cw_layout.addWidget(self.graph, 10, 0, 8, 14, Qt.AlignLeft)
+        self.cw_layout.addWidget(self.terminal, 10, 3, 8, 6, Qt.AlignLeft)
 
         self.n_pumps = n_pumps
+        starting_columns = [0, 4, 8, 12, 16]
         for i in range(1, self.n_pumps + 1):
             pump = Pump(i)
-            self.cw_layout.addWidget(pump, 2, i - 1, 8, -1, Qt.AlignLeft)
+            self.cw_layout.addWidget(pump, 2, starting_columns[i-1], 8, 4, Qt.AlignCenter)
             i += 1
 
         self.initUI()
@@ -45,12 +46,17 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
 
         self.setWindowTitle("Manatee Fluidics")
         self.setWindowIcon(QIcon("manatee_icon_square.png"))
+
+        # open window in full size
+        self.showMaximized()
+
         # self.setGeometry(1300, 200, 1000, 1500)
         # xpos, ypos, width, height (in pixels)
         # if xpos and ypos are 0, win shows up on the top-left corner;
         # 100, 100 moves the top-left corner of the window to the right and down
 
-        self.center()
+        # open not maximized, center of screen
+        # self.center()
 
     def center(self):
         qr = self.frameGeometry()
@@ -105,8 +111,87 @@ class Pump(QWidget):
         layout.addWidget(self.pump_box)
 
         # define and set the layout of the QGroupBox
-        self.pump_layout = QHBoxLayout(self)
+        self.pump_layout = QGridLayout(self)
         self.pump_box.setLayout(self.pump_layout)
+
+        self.validator = QDoubleValidator(self)
+        self.validator.setNotation(QDoubleValidator.ScientificNotation)
+
+        self.pressure_label = QLabel(self)
+        self.pressure_label.setText("Pressure (kPa)")
+        self.pressure_label.setAlignment(Qt.AlignLeft)
+
+        self.pressure_box = QLineEdit()
+        self.pressure_box.setValidator(self.validator)
+        self.pressure_box.setText("")
+
+        self.pressure_button = QPushButton()
+        self.pressure_button.setText("Set")
+        # self.button.clicked.connect()
+
+        self.speed_label = QLabel(self)
+        self.speed_label.setText("Speed (μl/sec)")
+        self.speed_label.setAlignment(Qt.AlignLeft)
+
+        self.speed_box = QLineEdit()
+        self.speed_box.setValidator(self.validator)
+        self.speed_box.setText("")
+
+        self.speed_button = QPushButton()
+        self.speed_button.setText("Set")
+        # self.button.clicked.connect()
+
+        self.volume_label = QLabel(self)
+        self.volume_label.setText("Volume (μl)")
+        self.volume_label.setAlignment(Qt.AlignLeft)
+
+        self.volume_box = QLineEdit()
+        self.volume_box.setValidator(self.validator)
+        self.volume_box.setText("")
+
+        self.hmin_button = QPushButton()
+        self.hmin_button.setText("Home min")
+        # self.button.clicked.connect()
+
+        self.hmax_button = QPushButton()
+        self.hmax_button.setText("Home max")
+        # self.button.clicked.connect()
+
+        self.mr_button = QPushButton()
+        self.mr_button.setText("Move relative")
+        # self.button.clicked.connect()
+
+        self.ma_button = QPushButton()
+        self.ma_button.setText("Move absolute")
+        # self.button.clicked.connect()
+
+        self.regulate_button = QPushButton()
+        self.regulate_button.setText("Regulate")
+        # self.button.clicked.connect()
+
+        self.speed_display = QLabel(self)
+        self.speed_display.setText("Speed\n(μl/sec)")
+        self.speed_display.setAlignment(Qt.AlignCenter)
+
+        # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
+        self.pump_layout.addWidget(self.pressure_label, 0, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.pressure_box, 0, 1, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.pressure_button, 0, 2, 1, 1, Qt.AlignLeft)
+
+        self.pump_layout.addWidget(self.speed_label, 1, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.speed_box, 1, 1, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.speed_button, 1, 2, 1, 1, Qt.AlignLeft)
+
+        self.pump_layout.addWidget(self.volume_label, 2, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.volume_box, 2, 1, 1, 1, Qt.AlignLeft)
+
+        self.pump_layout.addWidget(self.hmin_button, 3, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.hmax_button, 4, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.mr_button, 5, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.ma_button, 6, 0, 1, 1, Qt.AlignLeft)
+        self.pump_layout.addWidget(self.regulate_button, 7, 0, 1, 1, Qt.AlignLeft)
+
+        self.pump_layout.addWidget(self.speed_display, 3, 1, 5, 1, Qt.AlignCenter)
 
 
 class Graph(QWidget):
@@ -144,7 +229,7 @@ class Terminal(QWidget):
 
 
 def window():
-    n_pumps = 2
+    n_pumps = 5
     app = QApplication(sys.argv)
     win = MainWindow(n_pumps)
     win.show()  # shows window
