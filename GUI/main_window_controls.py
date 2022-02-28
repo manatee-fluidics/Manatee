@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 
 
 class Controls(QWidget):
+    """Creates and defines the Controls box and adds widgets"""
     def __init__(self):
         super(Controls, self).__init__()
 
@@ -19,16 +20,19 @@ class Controls(QWidget):
         controls_layout = QHBoxLayout(self)
         self.controls_box.setLayout(controls_layout)
 
+        # defining widgets
         self.switches = Switches()
         self.slaves = Slaves()
         self.programming = Programming()
 
+        # adding the widgets to the layout
         controls_layout.addWidget(self.switches)
         controls_layout.addWidget(self.slaves)
         controls_layout.addWidget(self.programming)
 
 
 class Switches(QWidget):
+    """Creates and defines the Switches box and its widgets"""
     def __init__(self):
         super(Switches, self).__init__()
 
@@ -61,6 +65,7 @@ class Switches(QWidget):
 
 
 class Slaves(QWidget):
+    """Creates and defines the Slaves box and its widgets"""
     def __init__(self):
         super(Slaves, self).__init__()
 
@@ -94,6 +99,7 @@ class Slaves(QWidget):
 
 
 class Programming(QWidget):
+    """Creates and defines the Programming box and its widgets"""
     def __init__(self):
         super(Programming, self).__init__()
 
