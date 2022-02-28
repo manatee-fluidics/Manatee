@@ -83,14 +83,17 @@ class Slaves(QWidget):
 
         self.button_switch = QPushButton()
         self.button_switch.setText("Switch slave")
+        self.button_switch.setEnabled(False)
         # self.button_switch.clicked.connect()
 
         self.button_ttl = QPushButton()
         self.button_ttl.setText("TTL slave")
+        self.button_ttl.setEnabled(False)
         # self.button_ttl.clicked.connect()
 
         self.button_multipinch = QPushButton()
         self.button_multipinch.setText("Multipinch slave")
+        self.button_multipinch.setEnabled(False)
         # self.button_multipinch.clicked.connect()
 
         self.slaves_layout.addWidget(self.button_switch)
