@@ -23,14 +23,8 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         self.text = Text()
         self.buttons = Buttons()
 
-        self.n_pumps = 5
-        pumps = []
+        self.n_pumps = 4
         for i in range(1, self.n_pumps + 1):
-            pumps.append("pump"+str(i))
-
-        i = 1
-        for pump in pumps:
-            # pump = Pump(i, self.settings)
             pump = Pump(i, self.process_settings(self.settings, i - 1))
             self.cw_layout.addWidget(pump, 0, i, 11, 1, Qt.AlignLeft)
             i += 1
