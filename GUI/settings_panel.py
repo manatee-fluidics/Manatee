@@ -6,10 +6,10 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtGui, QtCore
 
 
-class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
-    """Creates Main Window with all functions."""
-    def __init__(self, controller_settings):  # this will run whenever we create an instance of the MainWindow class
-        super(MainWindow, self).__init__()  # parent constructor
+class SettingsPanel(QMainWindow):  # inherits all properties from QMainWindow class
+    """Creates Setting Panel with all functions, textboxes, etc."""
+    def __init__(self, n_pumps, controller_settings):  # will run when an instance of the class is created
+        super(SettingsPanel, self).__init__()  # parent constructor
 
         # QMainWindow has a central widget that is a container for widgets, it has its own layout
         # create cw, set layout and alignment
@@ -18,12 +18,11 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         self.cw_layout.setAlignment(Qt.AlignLeft)
         self.centralWidget().setLayout(self.cw_layout)
 
-        self.settings = controller_settings
-
         self.text = Text()
         self.buttons = Buttons()
 
-        self.n_pumps = 4
+        self.settings = controller_settings
+        self.n_pumps = n_pumps
         for i in range(1, self.n_pumps + 1):
             pump = Pump(i, self.process_settings(self.settings, i - 1))
             self.cw_layout.addWidget(pump, 0, i, 11, 1, Qt.AlignLeft)
@@ -226,33 +225,20 @@ class Buttons(QWidget):
         self.button_save = QPushButton()
         self.button_save.setText("Upload settings")
         self.button_save.setFixedSize(100, 38)  # width, height
-        self.button_save.clicked.connect(lambda: refresh_settings())
+        self.button_save.clicked.connect(lambda: self.upload_settings())
 
         self.buttons_layout.addWidget(self.button_save)
 
-
-def refresh_settings(self):
-    return None
+    def upload_settings(self):
+        print("settings refreshed")
 
 
 # if __name__ == "__main__":
-def window():
-    controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
-                           'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
-                           'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
-                           'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
-                           'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
-                           'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
-                           'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
-                           'active': [1.0, 1.0, 1.0, 1.0, 1.0],
-                           'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
-                           'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
-                           'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
-
-    app = QApplication(sys.argv)
-    win = MainWindow(controller_settings)
-    win.show()  # shows window
-    sys.exit(app.exec_())  # clean exit when we close the window
+# def window():
+#     app = QApplication(sys.argv)
+#     win = SettingsPanel(dict)
+#     win.show()  # shows window
+#     sys.exit(app.exec_())  # clean exit when we close the window
 
 
-window()
+# window()
