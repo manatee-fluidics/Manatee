@@ -1,17 +1,17 @@
 import sys
 from PyQt5.QtGui import QIcon, QDoubleValidator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QGridLayout, QDesktopWidget, \
-    QLineEdit, QHBoxLayout, QGroupBox
+    QLineEdit, QHBoxLayout, QGroupBox, QSlider
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui, QtCore
 
-# import settings_panel
+import settings_panel
 import main_window_controls
 
 
 class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
     """Creates Main Window with all functions."""
-    def __init__(self, n_pumps):  # this will run whenever we create an instance of the MainWindow class
+    def __init__(self, n_pumps, controller_settings):  # will run when an instance of the MainWindow class is created
         super(MainWindow, self).__init__()  # parent constructor
 
         # QMainWindow has a central widget that is a container for widgets, it has its own layout
@@ -21,18 +21,22 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         self.cw_layout.setAlignment(Qt.AlignCenter)
         self.centralWidget().setLayout(self.cw_layout)
 
-        self.buttonbar = ButtonBar()
+        self.n_pumps = n_pumps
+
+        # defining widgets
+        self.buttonbar = ButtonBar(self.n_pumps, controller_settings)
         self.controls = main_window_controls.Controls()
         self.graph = Graph()
         self.terminal = Terminal()
 
+        # add widgets to main window
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
         self.cw_layout.addWidget(self.buttonbar, 0, 0, 1, 20, Qt.AlignLeft)
         self.cw_layout.addWidget(self.controls, 1, 0, 1, 20, Qt.AlignLeft)
         self.cw_layout.addWidget(self.graph, 10, 0, 8, 14, Qt.AlignLeft)
         self.cw_layout.addWidget(self.terminal, 10, 3, 8, 6, Qt.AlignLeft)
 
-        self.n_pumps = n_pumps
+        # add as many Pump widgets as it is defined upon calling the program
         starting_columns = [0, 4, 8, 12, 16]
         for i in range(1, self.n_pumps + 1):
             pump = Pump(i)
@@ -66,7 +70,8 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
 
 
 class ButtonBar(QWidget):
-    def __init__(self):
+    """This class defines the layout and buttons which belong to the button bar"""
+    def __init__(self, n_pumps, controller_settings):
         super(ButtonBar, self).__init__()
 
         self.buttons_layout = QHBoxLayout(self)
@@ -77,7 +82,7 @@ class ButtonBar(QWidget):
 
         self.button_settings = QPushButton()
         self.button_settings.setText("Settings")
-        # self.button_settings.clicked.connect(settings_panel.window) - error!!!
+        self.button_settings.clicked.connect(lambda: self.open_settings_panel(n_pumps, controller_settings))
 
         self.button_loadprot = QPushButton()
         self.button_loadprot.setText("Load Protocol")
@@ -91,11 +96,16 @@ class ButtonBar(QWidget):
         self.button_uploadprot.setText("Upload Protocol")
         # self.button_uploadprot.clicked.connect()
 
+        # add all above defined buttons to the class layout
         self.buttons_layout.addWidget(self.button_disconnect)
         self.buttons_layout.addWidget(self.button_settings)
         self.buttons_layout.addWidget(self.button_loadprot)
         self.buttons_layout.addWidget(self.button_runprot)
         self.buttons_layout.addWidget(self.button_uploadprot)
+
+    def open_settings_panel(self, n_pumps, controller_settings):
+        self.ui = settings_panel.SettingsPanel(n_pumps, controller_settings)
+        self.ui.show()
 
 
 class Pump(QWidget):
@@ -170,8 +180,12 @@ class Pump(QWidget):
         # self.button.clicked.connect()
 
         self.speed_display = QLabel(self)
-        self.speed_display.setText("Speed\n(μl/sec)")
+        self.speed_display.setText("Speed\n(μl/sec):\n0.0")
         self.speed_display.setAlignment(Qt.AlignCenter)
+
+        self.slider = QSlider(Qt.Vertical)
+        self.slider.setValue(100)
+
 
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
         self.pump_layout.addWidget(self.pressure_label, 0, 0, 1, 1, Qt.AlignLeft)
@@ -192,6 +206,7 @@ class Pump(QWidget):
         self.pump_layout.addWidget(self.regulate_button, 7, 0, 1, 1, Qt.AlignLeft)
 
         self.pump_layout.addWidget(self.speed_display, 3, 1, 5, 1, Qt.AlignCenter)
+        self.pump_layout.addWidget(self.slider, 3, 2, 5, 1, Qt.AlignRight)
 
 
 class Graph(QWidget):
@@ -228,12 +243,20 @@ class Terminal(QWidget):
         self.terminal_box.setLayout(self.terminal_layout)
 
 
-def window():
-    n_pumps = 5
-    app = QApplication(sys.argv)
-    win = MainWindow(n_pumps)
-    win.show()  # shows window
-    sys.exit(app.exec_())  # clean exit when we close the window
+data = {'baud': '250000',
+        'port': 'Test',
+        'waittime': '3000',
+        'targets': ['20', '10', '20', '20', '20'],
+        'speeds': ['2000', '2000', '120', '120', '240'],
+        'volumes': ['6000', '-9000', '30', '30', '30'],
+        'times': ['60', '60', '60', '60', '60'],}
 
 
-window()
+# def window():
+#     app = QApplication(sys.argv)
+#     win = MainWindow(n_pumps, controller_settings)
+#     win.show()  # shows window
+#     sys.exit(app.exec_())  # clean exit when we close the window
+
+
+# window()
