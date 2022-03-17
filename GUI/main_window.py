@@ -18,25 +18,25 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         # create cw, set layout and alignment
         self.setCentralWidget(QWidget(self))
         self.cw_layout = QGridLayout()
-        self.cw_layout.setAlignment(Qt.AlignCenter)
+        self.cw_layout.setAlignment(Qt.AlignTop)
         self.centralWidget().setLayout(self.cw_layout)
 
         self.n_pumps = n_pumps
 
         # defining widgets
         self.buttonbar = ButtonBar(self.n_pumps, controller_settings)
-        self.controls = main_window_controls.Controls()
+        self.controls = main_window_controls.Controls(pump_settings)
         self.pump_area = main_window_pumps.PumpArea(self.n_pumps, pump_settings)
         self.graph = Graph()
         self.terminal = Terminal()
 
         # add widgets to main window
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
-        self.cw_layout.addWidget(self.buttonbar, 0, 0, 2, 6, Qt.AlignCenter)
-        self.cw_layout.addWidget(self.controls, 0, 6, 2, 14, Qt.AlignCenter)
-        self.cw_layout.addWidget(self.pump_area, 2, 0, 13, -1)
-        self.cw_layout.addWidget(self.graph, 15, 0, -1, 15, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.terminal, 15, 15, -1, 5, Qt.AlignRight)
+        self.cw_layout.addWidget(self.buttonbar, 0, 0, 2, 6, Qt.AlignAbsolute)
+        self.cw_layout.addWidget(self.controls, 0, 6, 2, 14, Qt.AlignAbsolute)
+        self.cw_layout.addWidget(self.pump_area, 2, 0, 15, -1)
+        self.cw_layout.addWidget(self.graph, 17, 0, -1, 15, Qt.AlignAbsolute)
+        self.cw_layout.addWidget(self.terminal, 17, 15, -1, 5, Qt.AlignAbsolute)
 
         self.initUI()
 
@@ -129,6 +129,9 @@ class Graph(QWidget):
         self.graph_layout = QHBoxLayout(self)
         self.graph_box.setLayout(self.graph_layout)
 
+        label = QLabel("GRAPH")
+        self.graph_layout.addWidget(label)
+
 
 class Terminal(QWidget):
     def __init__(self):
@@ -147,15 +150,6 @@ class Terminal(QWidget):
         self.terminal_box.setLayout(self.terminal_layout)
 
 
-data = {'baud': '250000',
-        'port': 'Test',
-        'waittime': '3000',
-        'targets': ['20', '10', '20', '20', '20'],
-        'speeds': ['2000', '2000', '120', '120', '240'],
-        'volumes': ['6000', '-9000', '30', '30', '30'],
-        'times': ['60', '60', '60', '60', '60'],}
-
-
 def window():
     controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
                            'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
@@ -169,8 +163,16 @@ def window():
                            'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
                            'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
     n_pumps = len(controller_settings['Kps'])
+    pump_settings = {'baud': '250000',
+                     'waittime': '3000',
+                     'pressure': ['20', '10', '20', '20', '20'],
+                     'speed': ['2000', '2000', '120', '120', '240'],
+                     'volume': ['6000', '-9000', '30', '30', '30'],
+                     'times': ['60', '60', '60', '60', '60'],
+                     'port': 'Test'}
+
     app = QApplication(sys.argv)
-    win = MainWindow(n_pumps, controller_settings)
+    win = MainWindow(n_pumps, controller_settings, pump_settings)
     win.show()  # shows window
     sys.exit(app.exec_())  # clean exit when we close the window
 

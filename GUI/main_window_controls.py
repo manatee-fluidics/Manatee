@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 
 class Controls(QWidget):
     """Creates and defines the Controls box and adds widgets"""
-    def __init__(self):
+    def __init__(self, pump_settings):
         super(Controls, self).__init__()
 
         # define and set QWidget layout

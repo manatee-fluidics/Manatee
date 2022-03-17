@@ -5,14 +5,14 @@ from PyQt5.QtCore import Qt
 
 
 class PumpArea(QScrollArea):
-    def __init__(self, pump_number):
+    def __init__(self, pump_number, pump_settings):
         super(PumpArea, self).__init__()
 
         self.setWidgetResizable(True)
         self.horizontalScrollBar().setEnabled(True)
         self.verticalScrollBar().setEnabled(False)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.pump_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         # making qwidget object
         pump = QWidget()
@@ -26,7 +26,7 @@ class PumpArea(QScrollArea):
         starting_columns = [0, 4, 8, 12, 16]
         for i in range(1, self.n_pumps + 1):
             pump = Pump(i)
-            pump_layout.addWidget(pump, 2, starting_columns[i - 1], 11, 4, Qt.AlignLeft)
+            pump_layout.addWidget(pump, 0, starting_columns[i - 1], -1, 4)
             i += 1
 
 
@@ -131,4 +131,4 @@ class Pump(QGroupBox):
 
         self.pump_layout.addWidget(self.speed_display, 9, 0, 1, 1)
         self.pump_layout.addWidget(self.position_display, 10, 0, 1, 1)
-        self.pump_layout.addWidget(self.slider, 6, 1, -1, 1, Qt.AlignCenter)
+        self.pump_layout.addWidget(self.slider, 6, 1, -1, 1, Qt.AlignAbsolute)

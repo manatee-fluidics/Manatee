@@ -142,7 +142,7 @@ class Connections(QWidget):
                                  'speed': ['2000', '2000', '120', '120', '240'],
                                  'volume': ['6000', '-9000', '30', '30', '30'],
                                  'times': ['60', '60', '60', '60', '60'],
-                                 'port': 'Test',}
+                                 'port': 'Test'}
 
                 self.ui = main_window.MainWindow(n_pumps, controller_settings, pump_settings)
                 self.ui.show()
