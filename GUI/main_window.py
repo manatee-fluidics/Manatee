@@ -1,17 +1,17 @@
 import sys
-from PyQt5.QtGui import QIcon, QDoubleValidator
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QGridLayout, QDesktopWidget, \
-    QLineEdit, QHBoxLayout, QGroupBox, QSlider
+    QHBoxLayout, QGroupBox, QScrollArea
 from PyQt5.QtCore import Qt
-from PyQt5 import QtGui, QtCore
 
 import settings_panel
 import main_window_controls
+import main_window_pumps
 
 
 class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
     """Creates Main Window with all functions."""
-    def __init__(self, n_pumps, controller_settings):  # will run when an instance of the MainWindow class is created
+    def __init__(self, n_pumps, controller_settings, pump_settings):  # will run when an instance of the MainWindow class is created
         super(MainWindow, self).__init__()  # parent constructor
 
         # QMainWindow has a central widget that is a container for widgets, it has its own layout
@@ -26,22 +26,17 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         # defining widgets
         self.buttonbar = ButtonBar(self.n_pumps, controller_settings)
         self.controls = main_window_controls.Controls()
+        self.pump_area = main_window_pumps.PumpArea(self.n_pumps, pump_settings)
         self.graph = Graph()
         self.terminal = Terminal()
 
         # add widgets to main window
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
-        self.cw_layout.addWidget(self.buttonbar, 0, 0, 1, 20, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.controls, 1, 0, 1, 20, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.graph, 10, 0, 8, 14, Qt.AlignLeft)
-        self.cw_layout.addWidget(self.terminal, 10, 3, 8, 6, Qt.AlignLeft)
-
-        # add as many Pump widgets as it is defined upon calling the program
-        starting_columns = [0, 4, 8, 12, 16]
-        for i in range(1, self.n_pumps + 1):
-            pump = Pump(i)
-            self.cw_layout.addWidget(pump, 2, starting_columns[i-1], 8, 4, Qt.AlignCenter)
-            i += 1
+        self.cw_layout.addWidget(self.buttonbar, 0, 0, 2, 6, Qt.AlignCenter)
+        self.cw_layout.addWidget(self.controls, 0, 6, 2, 14, Qt.AlignCenter)
+        self.cw_layout.addWidget(self.pump_area, 2, 0, 13, -1)
+        self.cw_layout.addWidget(self.graph, 15, 0, -1, 15, Qt.AlignLeft)
+        self.cw_layout.addWidget(self.terminal, 15, 15, -1, 5, Qt.AlignRight)
 
         self.initUI()
 
@@ -74,7 +69,17 @@ class ButtonBar(QWidget):
     def __init__(self, n_pumps, controller_settings):
         super(ButtonBar, self).__init__()
 
-        self.buttons_layout = QHBoxLayout(self)
+        # define and set QWidget layout
+        layout = QGridLayout()
+        self.setLayout(layout)
+
+        # define and add QGroupBox to QWidget's layout
+        self.button_box = QGroupBox("Connection properties")
+        layout.addWidget(self.button_box)
+
+        # define and set the layout of the QGroupBox
+        self.buttons_layout = QGridLayout(self)
+        self.button_box.setLayout(self.buttons_layout)
 
         self.button_disconnect = QPushButton()
         self.button_disconnect.setText("Disconnect")
@@ -97,116 +102,15 @@ class ButtonBar(QWidget):
         # self.button_uploadprot.clicked.connect()
 
         # add all above defined buttons to the class layout
-        self.buttons_layout.addWidget(self.button_disconnect)
-        self.buttons_layout.addWidget(self.button_settings)
-        self.buttons_layout.addWidget(self.button_loadprot)
-        self.buttons_layout.addWidget(self.button_runprot)
-        self.buttons_layout.addWidget(self.button_uploadprot)
+        self.buttons_layout.addWidget(self.button_disconnect, 0, 0, 1, 1)
+        self.buttons_layout.addWidget(self.button_settings, 0, 1, 1, 1)
+        self.buttons_layout.addWidget(self.button_loadprot, 1, 0, 1, 1)
+        self.buttons_layout.addWidget(self.button_runprot, 1, 1, 1, 1)
+        self.buttons_layout.addWidget(self.button_uploadprot, 1, 2, 1, 1)
 
     def open_settings_panel(self, n_pumps, controller_settings):
         self.ui = settings_panel.SettingsPanel(n_pumps, controller_settings)
         self.ui.show()
-
-
-class Pump(QWidget):
-    def __init__(self, pump_number):
-        super(Pump, self).__init__()
-
-        # define and set QWidget layout
-        layout = QGridLayout()
-        self.setLayout(layout)
-
-        # define and add QGroupBox to QWidget's layout
-        self.pump_box = QGroupBox("Pump " + str(pump_number))  # Pump and number !!!!!!!!!!
-        layout.addWidget(self.pump_box)
-
-        # define and set the layout of the QGroupBox
-        self.pump_layout = QGridLayout(self)
-        self.pump_box.setLayout(self.pump_layout)
-
-        self.validator = QDoubleValidator(self)
-        self.validator.setNotation(QDoubleValidator.ScientificNotation)
-
-        self.pressure_label = QLabel(self)
-        self.pressure_label.setText("Pressure (kPa)")
-        self.pressure_label.setAlignment(Qt.AlignLeft)
-
-        self.pressure_box = QLineEdit()
-        self.pressure_box.setValidator(self.validator)
-        self.pressure_box.setText("")
-
-        self.pressure_button = QPushButton()
-        self.pressure_button.setText("Set")
-        # self.button.clicked.connect()
-
-        self.speed_label = QLabel(self)
-        self.speed_label.setText("Speed (μl/sec)")
-        self.speed_label.setAlignment(Qt.AlignLeft)
-
-        self.speed_box = QLineEdit()
-        self.speed_box.setValidator(self.validator)
-        self.speed_box.setText("")
-
-        self.speed_button = QPushButton()
-        self.speed_button.setText("Set")
-        # self.button.clicked.connect()
-
-        self.volume_label = QLabel(self)
-        self.volume_label.setText("Volume (μl)")
-        self.volume_label.setAlignment(Qt.AlignLeft)
-
-        self.volume_box = QLineEdit()
-        self.volume_box.setValidator(self.validator)
-        self.volume_box.setText("")
-
-        self.hmin_button = QPushButton()
-        self.hmin_button.setText("Home min")
-        # self.button.clicked.connect()
-
-        self.hmax_button = QPushButton()
-        self.hmax_button.setText("Home max")
-        # self.button.clicked.connect()
-
-        self.mr_button = QPushButton()
-        self.mr_button.setText("Move relative")
-        # self.button.clicked.connect()
-
-        self.ma_button = QPushButton()
-        self.ma_button.setText("Move absolute")
-        # self.button.clicked.connect()
-
-        self.regulate_button = QPushButton()
-        self.regulate_button.setText("Regulate")
-        # self.button.clicked.connect()
-
-        self.speed_display = QLabel(self)
-        self.speed_display.setText("Speed\n(μl/sec):\n0.0")
-        self.speed_display.setAlignment(Qt.AlignCenter)
-
-        self.slider = QSlider(Qt.Vertical)
-        self.slider.setValue(100)
-
-
-        # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
-        self.pump_layout.addWidget(self.pressure_label, 0, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.pressure_box, 0, 1, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.pressure_button, 0, 2, 1, 1, Qt.AlignLeft)
-
-        self.pump_layout.addWidget(self.speed_label, 1, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.speed_box, 1, 1, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.speed_button, 1, 2, 1, 1, Qt.AlignLeft)
-
-        self.pump_layout.addWidget(self.volume_label, 2, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.volume_box, 2, 1, 1, 1, Qt.AlignLeft)
-
-        self.pump_layout.addWidget(self.hmin_button, 3, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.hmax_button, 4, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.mr_button, 5, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.ma_button, 6, 0, 1, 1, Qt.AlignLeft)
-        self.pump_layout.addWidget(self.regulate_button, 7, 0, 1, 1, Qt.AlignLeft)
-
-        self.pump_layout.addWidget(self.speed_display, 3, 1, 5, 1, Qt.AlignCenter)
-        self.pump_layout.addWidget(self.slider, 3, 2, 5, 1, Qt.AlignRight)
 
 
 class Graph(QWidget):
@@ -252,11 +156,23 @@ data = {'baud': '250000',
         'times': ['60', '60', '60', '60', '60'],}
 
 
-# def window():
-#     app = QApplication(sys.argv)
-#     win = MainWindow(n_pumps, controller_settings)
-#     win.show()  # shows window
-#     sys.exit(app.exec_())  # clean exit when we close the window
+def window():
+    controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
+                           'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
+                           'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
+                           'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
+                           'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
+                           'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
+                           'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
+                           'active': [1.0, 1.0, 1.0, 1.0, 1.0],
+                           'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
+                           'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
+                           'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
+    n_pumps = len(controller_settings['Kps'])
+    app = QApplication(sys.argv)
+    win = MainWindow(n_pumps, controller_settings)
+    win.show()  # shows window
+    sys.exit(app.exec_())  # clean exit when we close the window
 
 
-# window()
+window()
