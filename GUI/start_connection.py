@@ -136,7 +136,15 @@ class Connections(QWidget):
                                        'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
                                        'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
                 n_pumps = len(controller_settings['Kps'])
-                self.ui = main_window.MainWindow(n_pumps, controller_settings)
+                pump_settings = {'baud': '250000',
+                                 'waittime': '3000',
+                                 'pressure': ['20', '10', '20', '20', '20'],
+                                 'speed': ['2000', '2000', '120', '120', '240'],
+                                 'volume': ['6000', '-9000', '30', '30', '30'],
+                                 'times': ['60', '60', '60', '60', '60'],
+                                 'port': 'Test',}
+
+                self.ui = main_window.MainWindow(n_pumps, controller_settings, pump_settings)
                 self.ui.show()
                 self.connection_panel_window.close()
 
