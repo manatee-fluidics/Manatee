@@ -12,18 +12,19 @@ class PumpArea(QScrollArea):
         self.horizontalScrollBar().setEnabled(True)
         self.verticalScrollBar().setEnabled(False)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         # making qwidget object
         pump = QWidget()
         self.setWidget(pump)
         pump_layout = QGridLayout()
+        pump_layout.setAlignment(Qt.AlignLeft)
         pump.setLayout(pump_layout)
 
         self.n_pumps = pump_number
 
         # add as many Pump widgets as it is defined upon calling the program
-        starting_columns = [0, 4, 8, 12, 16]
+        starting_columns = [0, 4, 8, 12, 16, 20, 24, 28]
         for i in range(1, self.n_pumps + 1):
             pump = Pump(i, self.process_pump_settings(pump_settings, i-1))
             pump_layout.addWidget(pump, 0, starting_columns[i - 1], -1, 4)
@@ -74,7 +75,7 @@ class Pump(QGroupBox):
         # speed and volume settings
         self.speed_label = QLabel(self)
         self.speed_label.setText("Speed (μl/sec)")
-        self.speed_label.setAlignment(Qt.AlignLeft)
+        # self.speed_label.setAlignment(Qt.AlignLeft)
 
         self.speed_box = QLineEdit()
         self.speed_box.setValidator(self.validator)
@@ -82,14 +83,18 @@ class Pump(QGroupBox):
 
         self.volume_label = QLabel(self)
         self.volume_label.setText("Volume (μl)")
-        self.volume_label.setAlignment(Qt.AlignLeft)
+        # self.volume_label.setAlignment(Qt.AlignLeft)
 
         self.volume_box = QLineEdit()
         self.volume_box.setValidator(self.validator)
         self.volume_box.setText(pump_values[2])
 
         self.sv_set = QPushButton()
-        self.sv_set.setText("Set")
+        self.sv_set.setText("Set speed")
+        # self.button.clicked.connect()
+
+        self.move_button = QPushButton()
+        self.move_button.setText("Move")
         # self.button.clicked.connect()
 
         # radio button - move abs & relative
@@ -99,30 +104,30 @@ class Pump(QGroupBox):
         self.move_relative = QRadioButton("Move relative")
         # self.move_relative.toggled.connect()
 
-        self.move_box = QGroupBox("Move pump")
-        self.move_layout = QGridLayout(self)
-        self.move_box.setLayout(self.move_layout)
+        self.home_box = QGroupBox("Home pump")
+        self.home_layout = QGridLayout(self)
+        self.home_box.setLayout(self.home_layout)
 
-        self.move_up_button = QPushButton()
-        self.move_up_button.setText("+")
+        self.home_up_button = QPushButton()
+        self.home_up_button.setText("+")
         # self.button.clicked.connect()
 
-        self.move_down_button = QPushButton()
-        self.move_down_button.setText("-")
+        self.home_down_button = QPushButton()
+        self.home_down_button.setText("-")
         # self.button.clicked.connect()
 
-        self.move_layout.addWidget(self.move_up_button, 0, 0, 1, 1)
-        self.move_layout.addWidget(self.move_down_button, 1, 0, 1, 1)
+        self.home_layout.addWidget(self.home_up_button, 0, 0, 1, 1)
+        self.home_layout.addWidget(self.home_down_button, 0, 1, 1, 1)
 
         self.speed_display = QLabel(self)
         self.speed_display.setText("Speed (μl/sec): 0.0")
-        self.speed_display.setAlignment(Qt.AlignLeft)
+        # self.speed_display.setAlignment(Qt.AlignLeft)
 
         self.position_display = QLabel(self)
         self.position_display.setText("Pump position: 0.0")
-        self.position_display.setAlignment(Qt.AlignLeft)
+        # self.position_display.setAlignment(Qt.AlignLeft)
 
-        self.slider = QSlider(Qt.Vertical)
+        self.slider = QSlider(Qt.Horizontal)
         self.slider.setValue(100)
 
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
@@ -136,11 +141,13 @@ class Pump(QGroupBox):
         self.pump_layout.addWidget(self.volume_label, 3, 0, 1, 1)
         self.pump_layout.addWidget(self.volume_box, 3, 1, 1, 1)
         self.pump_layout.addWidget(self.sv_set, 4, 0, 1, 1)
+        self.pump_layout.addWidget(self.move_button, 4, 1, 1, 1)
+
         self.pump_layout.addWidget(self.move_absolute, 5, 0, 1, 1)
         self.pump_layout.addWidget(self.move_relative, 5, 1, 1, 1)
 
-        self.pump_layout.addWidget(self.move_box, 6, 0, 3, 1)
+        self.pump_layout.addWidget(self.home_box, 6, 0, 1, -1)
 
-        self.pump_layout.addWidget(self.speed_display, 9, 0, 1, 1)
-        self.pump_layout.addWidget(self.position_display, 10, 0, 1, 1)
-        self.pump_layout.addWidget(self.slider, 6, 1, -1, 1, Qt.AlignAbsolute)
+        self.pump_layout.addWidget(self.speed_display, 7, 0, 1, 1)
+        self.pump_layout.addWidget(self.position_display, 8, 0, 1, 1)
+        self.pump_layout.addWidget(self.slider, 7, 1, 1, -1, Qt.AlignCenter)

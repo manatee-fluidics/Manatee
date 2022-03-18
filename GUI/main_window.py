@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QGridLayout, QDesktopWidget, \
-    QHBoxLayout, QGroupBox, QScrollArea
+    QHBoxLayout, QGroupBox
 from PyQt5.QtCore import Qt
 
 import settings_panel
@@ -32,11 +32,17 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
 
         # add widgets to main window
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
-        self.cw_layout.addWidget(self.buttonbar, 0, 0, 2, 6, Qt.AlignAbsolute)
-        self.cw_layout.addWidget(self.controls, 0, 6, 2, 14, Qt.AlignAbsolute)
-        self.cw_layout.addWidget(self.pump_area, 2, 0, 15, -1)
-        self.cw_layout.addWidget(self.graph, 17, 0, -1, 15, Qt.AlignAbsolute)
-        self.cw_layout.addWidget(self.terminal, 17, 15, -1, 5, Qt.AlignAbsolute)
+        # self.cw_layout.addWidget(self.buttonbar, 0, 0, 1, 12)
+        # self.cw_layout.addWidget(self.controls, 0, 12, 1, -1)
+        # self.cw_layout.addWidget(self.pump_area, 1, 0, 2, -1)
+        # self.cw_layout.addWidget(self.graph, 3, 0, 2, 20)
+        # self.cw_layout.addWidget(self.terminal, 3, 20, 2, -1)
+
+        self.cw_layout.addWidget(self.buttonbar, 0, 0, 1, 2)
+        self.cw_layout.addWidget(self.controls, 0, 2, 1, -1)
+        self.cw_layout.addWidget(self.pump_area, 1, 0, 2, -1)
+        self.cw_layout.addWidget(self.graph, 3, 0, 1, 4)
+        self.cw_layout.addWidget(self.terminal, 3, 4, 1, -1)
 
         self.initUI()
 
@@ -108,6 +114,11 @@ class ButtonBar(QWidget):
         self.buttons_layout.addWidget(self.button_runprot, 1, 1, 1, 1)
         self.buttons_layout.addWidget(self.button_uploadprot, 1, 2, 1, 1)
 
+        # all buttons 1 line
+        # self.buttons_layout.addWidget(self.button_loadprot, 0, 2, 1, 1)
+        # self.buttons_layout.addWidget(self.button_runprot, 0, 3, 1, 1)
+        # self.buttons_layout.addWidget(self.button_uploadprot, 0, 4, 1, 1)
+
     def open_settings_panel(self, n_pumps, controller_settings):
         self.ui = settings_panel.SettingsPanel(n_pumps, controller_settings)
         self.ui.show()
@@ -178,3 +189,24 @@ def window():
 
 
 window()
+
+
+    # controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1, 0, 0, 0],
+    #                        'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04, 0, 0 ,0],
+    #                        'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001, 0, 0, 0],
+    #                        'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0, 0, 0, 0],
+    #                        'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836, 0, 0, 0],
+    #                        'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953, 0, 0, 0],
+    #                        'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5, 0, 0, 0],
+    #                        'active': [1.0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0],
+    #                        'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018, 0, 0, 0],
+    #                        'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04, 0, 0, 0],
+    #                        'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0, 0, 0, 0]}
+    # n_pumps = len(controller_settings['Kps'])
+    # pump_settings = {'baud': '250000',
+    #                  'waittime': '3000',
+    #                  'pressure': ['20', '10', '20', '20', '20', '20', '20', '20'],
+    #                  'speed': ['2000', '2000', '120', '120', '240', '20', '20', '20'],
+    #                  'volume': ['6000', '-9000', '30', '30', '30', '20', '20', '20'],
+    #                  'time': ['60', '60', '60', '60', '60', '20', '20', '20'],
+    #                  'port': 'Test'}
