@@ -23,7 +23,7 @@ class Controls(QWidget):
         # defining widgets
         self.switches = Switches()
         self.slaves = Slaves()
-        self.programming = Programming()
+        self.programming = Programming(pump_settings)
 
         # adding the widgets to the layout
         controls_layout.addWidget(self.switches)
@@ -103,7 +103,7 @@ class Slaves(QWidget):
 
 class Programming(QWidget):
     """Creates and defines the Programming box and its widgets"""
-    def __init__(self):
+    def __init__(self, pump_settings):
         super(Programming, self).__init__()
 
         # define and set QWidget layout
@@ -126,7 +126,8 @@ class Programming(QWidget):
         self.validator.setNotation(QDoubleValidator.ScientificNotation)
         self.textbox = QLineEdit()
         self.textbox.setValidator(self.validator)
-        self.textbox.setText("")
+        self.textbox.setText(self.get_waittime(pump_settings))
+        # adds waittime value from pump_settings dict to textbox
 
         self.button = QPushButton()
         self.button.setText("Send")
@@ -135,3 +136,7 @@ class Programming(QWidget):
         self.programming_layout.addWidget(self.label)
         self.programming_layout.addWidget(self.textbox)
         self.programming_layout.addWidget(self.button)
+
+    def get_waittime(self, dict):
+        """Processes pump_settings dict and gets waittime value."""
+        return dict['waittime']

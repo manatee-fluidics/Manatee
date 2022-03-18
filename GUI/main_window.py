@@ -11,7 +11,7 @@ import main_window_pumps
 
 class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
     """Creates Main Window with all functions."""
-    def __init__(self, n_pumps, controller_settings, pump_settings):  # will run when an instance of the MainWindow class is created
+    def __init__(self, n_pumps, controller_settings, pump_settings):
         super(MainWindow, self).__init__()  # parent constructor
 
         # QMainWindow has a central widget that is a container for widgets, it has its own layout
@@ -168,7 +168,7 @@ def window():
                      'pressure': ['20', '10', '20', '20', '20'],
                      'speed': ['2000', '2000', '120', '120', '240'],
                      'volume': ['6000', '-9000', '30', '30', '30'],
-                     'times': ['60', '60', '60', '60', '60'],
+                     'time': ['60', '60', '60', '60', '60'],
                      'port': 'Test'}
 
     app = QApplication(sys.argv)

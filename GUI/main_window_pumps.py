@@ -25,13 +25,25 @@ class PumpArea(QScrollArea):
         # add as many Pump widgets as it is defined upon calling the program
         starting_columns = [0, 4, 8, 12, 16]
         for i in range(1, self.n_pumps + 1):
-            pump = Pump(i)
+            pump = Pump(i, self.process_pump_settings(pump_settings, i-1))
             pump_layout.addWidget(pump, 0, starting_columns[i - 1], -1, 4)
             i += 1
 
+    def process_pump_settings(self, dict, pump_number):
+        """This function processes the contents of the pump_settings dictionary. It makes a list for each pump with
+        the corresponding values for all 4 pump values, which later will be handed to the pump initializer for loop
+        (above) and be dealt with in the Pump class to distribute the values into the corresponding textboxes."""
+        pump_values = []
+        keys = ["pressure", "speed", "volume"]
+        for key, value in dict.items():
+            if key in keys:
+                pump_values.append(value[pump_number])
+
+        return pump_values
+
 
 class Pump(QGroupBox):
-    def __init__(self, pump_number):
+    def __init__(self, pump_number, pump_values):  # pump_values is a list
         super(Pump, self).__init__()
 
         # define and set the layout of the QGroupBox
@@ -49,7 +61,7 @@ class Pump(QGroupBox):
 
         self.pressure_box = QLineEdit()
         self.pressure_box.setValidator(self.validator)
-        self.pressure_box.setText("")
+        self.pressure_box.setText(pump_values[0])
 
         self.pressure_set = QPushButton()
         self.pressure_set.setText("Pressure set")
@@ -66,7 +78,7 @@ class Pump(QGroupBox):
 
         self.speed_box = QLineEdit()
         self.speed_box.setValidator(self.validator)
-        self.speed_box.setText("")
+        self.speed_box.setText(pump_values[1])
 
         self.volume_label = QLabel(self)
         self.volume_label.setText("Volume (μl)")
@@ -74,7 +86,7 @@ class Pump(QGroupBox):
 
         self.volume_box = QLineEdit()
         self.volume_box.setValidator(self.validator)
-        self.volume_box.setText("")
+        self.volume_box.setText(pump_values[2])
 
         self.sv_set = QPushButton()
         self.sv_set.setText("Set")
