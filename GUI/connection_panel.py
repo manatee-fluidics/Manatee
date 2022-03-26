@@ -11,10 +11,10 @@ import glob
 import main_window
 
 
-class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
+class ConnectionWindow(QMainWindow):  # inherits all properties from QMainWindow class
     """Creates Main Window with all functions."""
     def __init__(self, MT_queue):  # this will run whenever we create an instance of the MainWindow class
-        super(MainWindow, self).__init__()  # parent constructor
+        super(ConnectionWindow, self).__init__()  # parent constructor
 
         # QMainWindow has a central widget that is a container for widgets, it has its own layout
         # create cw, set layout and alignment
@@ -66,11 +66,11 @@ class Logo(QLabel):
 class Connections(QWidget):
     """Connection panel. Displays refresh button, available ports in dropdown menu, connect button
     and textbox which let's the user know about what the program is doing."""
-    def __init__(self, cp_window, MT_queue):
+    def __init__(self, connection_window, MT_queue):
         super(Connections, self).__init__()
 
         self.MT_queue = MT_queue
-        self.connection_panel_window = cp_window
+        self.connection_panel_window = connection_window
         self.conn_layout = QGridLayout(self)
 
         # define refresh button
@@ -124,18 +124,19 @@ class Connections(QWidget):
         # if connection is successful open main window and close current window
         if self.dropdown.currentIndex() != 0:
             try:
-                controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
-                                       'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
-                                       'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
-                                       'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
-                                       'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
-                                       'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
-                                       'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
+                controller_settings = {'kp': [0.1, 0.1, 0.1, 0.1, 0.1],
+                                       'ki': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
+                                       'kd': [1e-04, 1e-04, 0.0, 0.001, 0.001],
+                                       'motor_cal': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
+                                       'syringe_cal': [642.42426, 369.836, 369.836, 369.836, 369.836],
+                                       'syringe_volume': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
+                                       'max_speed': [2.75, 2.5, 2.5, 2.5, 2.5],
                                        'active': [1.0, 1.0, 1.0, 1.0, 1.0],
-                                       'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
-                                       'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
-                                       'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
-                n_pumps = len(controller_settings['Kps'])
+                                       'prca': [0.018, 0.018, 0.018, 0.018, 0.018],
+                                       'prcb': [0.04, 0.04, 0.04, 0.04, 0.04],
+                                       # 'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]
+                                       }
+                n_pumps = len(controller_settings['kp'])
                 pump_settings = {'baud': '250000',
                                  'waittime': '3000',
                                  'pressure': ['20', '10', '20', '20', '20'],
@@ -192,11 +193,15 @@ class Connections(QWidget):
 
 def window(MT_queue):
     app = QApplication(sys.argv)
-    win = MainWindow(MT_queue)
+    win = ConnectionWindow(MT_queue)
     win.show()  # shows window
     sys.exit(app.exec_())  # clean exit when we close the window
     
 
 if __name__ == "__main__":
+# def main():
     MT_queue = mp.Queue()
     window(MT_queue)
+
+
+# main()

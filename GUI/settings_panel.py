@@ -18,15 +18,20 @@ class SettingsPanel(QMainWindow):  # inherits all properties from QMainWindow cl
         self.cw_layout.setAlignment(Qt.AlignLeft)
         self.centralWidget().setLayout(self.cw_layout)
 
-        self.text = Text()
-        self.buttons = Buttons()
-
+        # dict where all the data is
         self.settings = controller_settings
+
+        self.text = Text()
+
         self.n_pumps = n_pumps
+        self.pump_list = []
         for i in range(1, self.n_pumps + 1):
             pump = Pump(i, self.process_settings(self.settings, i - 1))
             self.cw_layout.addWidget(pump, 0, i, 11, 1, Qt.AlignLeft)
+            self.pump_list.append(pump)
             i += 1
+
+        self.buttons = Buttons(self, self.settings, self.pump_list)
 
         # name, starting row, starting col, rowspan, colspan (till the end is -1), alignment
         self.cw_layout.addWidget(self.text, 0, 0, 11, 1, Qt.AlignRight)
@@ -101,9 +106,9 @@ class Text(QWidget):
         self.ms.setText("Max speed (mm/sec)")
         self.ms.setAlignment(Qt.AlignRight)
 
-        self.chl = QLabel(self)
-        self.chl.setText("Active")
-        self.chl.setAlignment(Qt.AlignRight)
+        self.active = QLabel(self)
+        self.active.setText("Active")
+        self.active.setAlignment(Qt.AlignRight)
 
         self.prca = QLabel(self)
         self.prca.setText("Pressure cal A")
@@ -126,7 +131,7 @@ class Text(QWidget):
         self.text_layout.addWidget(self.sc)
         self.text_layout.addWidget(self.sv)
         self.text_layout.addWidget(self.ms)
-        self.text_layout.addWidget(self.chl)
+        self.text_layout.addWidget(self.active)
         self.text_layout.addWidget(self.prca)
         self.text_layout.addWidget(self.prcb)
         #self.text_layout.addWidget(self.su)
@@ -136,6 +141,14 @@ class Pump(QWidget):
     def __init__(self, pump_number, settings_list):
         super(Pump, self).__init__()
 
+        # initialize list to later store edited values in
+        # first value is the pump number so all pumps will have a list
+
+        # or one list before initializing the pumps
+        # that list will collect all data ad use that list in Button class
+        self.edited_values = []
+        self.pump_number = pump_number
+
         # specify widget layout, settings dict and validators (only accept numbers)
         self.pump_layout = QVBoxLayout(self)
         self.settings = settings_list  # deal with list element distribution to setText
@@ -143,13 +156,15 @@ class Pump(QWidget):
         self.validator.setNotation(QDoubleValidator.ScientificNotation)
 
         self.pump = QLabel(self)
-        self.pump.setText("Pump " + str(pump_number))
+        self.pump.setText("Pump " + str(self.pump_number))
         self.pump.setAlignment(Qt.AlignLeft)
 
         self.kp_value = QLineEdit()
         self.kp_value.setToolTip("Kp")
         self.kp_value.setValidator(self.validator)
         self.kp_value.setText(str(self.settings[0]))
+        # self.kp_value.textChanged[str].connect(lambda: self.record_text_change(self.edited_values, str(45),
+        #                                                                        "Kp", self.pump_number))
 
         self.ki_value = QLineEdit()
         self.ki_value.setToolTip("Ki")
@@ -161,30 +176,30 @@ class Pump(QWidget):
         self.kd_value.setValidator(self.validator)
         self.kd_value.setText(str(self.settings[2]))
 
-        self.motor_value = QLineEdit()
-        self.motor_value.setToolTip("Motor cal (steps/mm)")
-        self.motor_value.setValidator(self.validator)
-        self.motor_value.setText(str(self.settings[3]))
+        self.motor_cal_value = QLineEdit()
+        self.motor_cal_value.setToolTip("Motor cal (steps/mm)")
+        self.motor_cal_value.setValidator(self.validator)
+        self.motor_cal_value.setText(str(self.settings[3]))
 
-        self.sc_value = QLineEdit()
-        self.sc_value.setToolTip("Syringe cal (μl/mm)")
-        self.sc_value.setValidator(self.validator)
-        self.sc_value.setText(str(self.settings[4]))
+        self.syringe_cal_value = QLineEdit()
+        self.syringe_cal_value.setToolTip("Syringe cal (μl/mm)")
+        self.syringe_cal_value.setValidator(self.validator)
+        self.syringe_cal_value.setText(str(self.settings[4]))
 
-        self.sv_value = QLineEdit()
-        self.sv_value.setToolTip("Syringe volume (μl)")
-        self.sv_value.setValidator(self.validator)
-        self.sv_value.setText(str(self.settings[5]))
+        self.syringe_volume_value = QLineEdit()
+        self.syringe_volume_value.setToolTip("Syringe volume (μl)")
+        self.syringe_volume_value.setValidator(self.validator)
+        self.syringe_volume_value.setText(str(self.settings[5]))
 
-        self.ms_value = QLineEdit()
-        self.ms_value.setToolTip("Max speed (mm/sec)")
-        self.ms_value.setValidator(self.validator)
-        self.ms_value.setText(str(self.settings[6]))
+        self.max_speed_value = QLineEdit()
+        self.max_speed_value.setToolTip("Max speed (mm/sec)")
+        self.max_speed_value.setValidator(self.validator)
+        self.max_speed_value.setText(str(self.settings[6]))
 
-        self.chl_value = QLineEdit()
-        self.chl_value.setToolTip("Active")
-        self.chl_value.setValidator(self.validator)
-        self.chl_value.setText(str(self.settings[7]))
+        self.active_value = QLineEdit()
+        self.active_value.setToolTip("Active")
+        self.active_value.setValidator(self.validator)
+        self.active_value.setText(str(self.settings[7]))
 
         self.prca_value = QLineEdit()
         self.prca_value.setToolTip("Pressure cal A")
@@ -206,31 +221,69 @@ class Pump(QWidget):
         self.pump_layout.addWidget(self.kp_value)
         self.pump_layout.addWidget(self.ki_value)
         self.pump_layout.addWidget(self.kd_value)
-        self.pump_layout.addWidget(self.motor_value)
-        self.pump_layout.addWidget(self.sc_value)
-        self.pump_layout.addWidget(self.sv_value)
-        self.pump_layout.addWidget(self.ms_value)
-        self.pump_layout.addWidget(self.chl_value)
+        self.pump_layout.addWidget(self.motor_cal_value)
+        self.pump_layout.addWidget(self.syringe_cal_value)
+        self.pump_layout.addWidget(self.syringe_volume_value)
+        self.pump_layout.addWidget(self.max_speed_value)
+        self.pump_layout.addWidget(self.active_value)
         self.pump_layout.addWidget(self.prca_value)
         self.pump_layout.addWidget(self.prcb_value)
         # self.pump_layout.addWidget(self.su_value)
 
 
+    # def record_text_change(self, edited_values, new_text, row, pump_number):
+    #     """Gets the new value in the textbox and row the textbox belongs to,
+    #     puts all this data into a list and appends that list to the edited_values list earlier defined in the class"""
+    #     change = [new_text, row, pump_number]
+    #     edited_values.append(change)
+    #     print(edited_values)
+
+
 class Buttons(QWidget):
-    def __init__(self):
+    def __init__(self, settings_window, controller_settings, pump_list):
         super(Buttons, self).__init__()
 
         self.buttons_layout = QHBoxLayout(self)
 
         self.button_save = QPushButton()
-        self.button_save.setText("Upload settings")
+        self.button_save.setText("Save settings")
         self.button_save.setFixedSize(100, 38)  # width, height
-        self.button_save.clicked.connect(lambda: self.upload_settings())
+        self.button_save.clicked.connect(lambda: self.save_settings())
 
         self.buttons_layout.addWidget(self.button_save)
 
-    def upload_settings(self):
-        print("settings refreshed")
+        self.settings_panel_window = settings_window
+        self.settings = controller_settings
+        self.pump_list = pump_list
+
+    def save_settings(self):
+        # get all values from all pumps and all textboxes and put them in a new dict
+        # from now on, that will be the dict in use
+
+        # list = ["kp", "ki", "kd", "motor_cal", "syringe_cal", "syringe_volume", "max_speed", "active", "prca", "prcb"]
+
+        # initialize new dict
+        dict = {}
+        for key, value in self.settings.items():
+            dict[key] = []
+
+        for i in range(len(self.pump_list)):
+            dict["kp"].append(self.pump_list[i].kp_value.text())
+            dict["ki"].append(self.pump_list[i].ki_value.text())
+            dict["kd"].append(self.pump_list[i].kd_value.text())
+            dict["motor_cal"].append(self.pump_list[i].motor_cal_value.text())
+            dict["syringe_cal"].append(self.pump_list[i].syringe_cal_value.text())
+            dict["syringe_volume"].append(self.pump_list[i].syringe_volume_value.text())
+            dict["max_speed"].append(self.pump_list[i].max_speed_value.text())
+            dict["active"].append(self.pump_list[i].active_value.text())
+            dict["prca"].append(self.pump_list[i].prca_value.text())
+            dict["prcb"].append(self.pump_list[i].prcb_value.text())
+
+        # add pickle here to store dict
+
+        self.settings_panel_window.close()
+
+        print(self.pump_list)
 
 
 # if __name__ == "__main__":

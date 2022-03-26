@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLa
     QHBoxLayout, QGroupBox
 from PyQt5.QtCore import Qt
 
+import connection_panel
 import settings_panel
 import main_window_controls
 import main_window_pumps
@@ -24,7 +25,8 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         self.n_pumps = n_pumps
 
         # defining widgets
-        self.buttonbar = ButtonBar(self.n_pumps, controller_settings)
+        # ButtonBar gets self because later a button will close the window
+        self.buttonbar = ButtonBar(self, self.n_pumps, controller_settings)
         self.controls = main_window_controls.Controls(pump_settings)
         self.pump_area = main_window_pumps.PumpArea(self.n_pumps, pump_settings)
         self.graph = Graph()
@@ -71,9 +73,12 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
 
 
 class ButtonBar(QWidget):
-    """This class defines the layout and buttons which belong to the button bar"""
-    def __init__(self, n_pumps, controller_settings):
+    """This class defines the layout and function of the buttons which belong to the button bar"""
+    def __init__(self, MainWindow, n_pumps, controller_settings):
         super(ButtonBar, self).__init__()
+
+        # variable to store the current instance of the main window
+        self.main_window = MainWindow
 
         # define and set QWidget layout
         layout = QGridLayout()
@@ -89,7 +94,7 @@ class ButtonBar(QWidget):
 
         self.button_disconnect = QPushButton()
         self.button_disconnect.setText("Disconnect")
-        # self.button_disconnect.clicked.connect()
+        self.button_disconnect.clicked.connect(lambda: self.disconnect_click())
 
         self.button_settings = QPushButton()
         self.button_settings.setText("Settings")
@@ -114,13 +119,15 @@ class ButtonBar(QWidget):
         self.buttons_layout.addWidget(self.button_runprot, 1, 1, 1, 1)
         self.buttons_layout.addWidget(self.button_uploadprot, 1, 2, 1, 1)
 
-        # all buttons 1 line
-        # self.buttons_layout.addWidget(self.button_loadprot, 0, 2, 1, 1)
-        # self.buttons_layout.addWidget(self.button_runprot, 0, 3, 1, 1)
-        # self.buttons_layout.addWidget(self.button_uploadprot, 0, 4, 1, 1)
+    def disconnect_click(self):
+        """Opens the connection panel, closes the current instance of the main window"""
+        # self.ui = start_connection
+        # self.ui.show()
+        self.main_window.close()
 
     def open_settings_panel(self, n_pumps, controller_settings):
         self.ui = settings_panel.SettingsPanel(n_pumps, controller_settings)
+        self.ui.setWindowModality(Qt.ApplicationModal)  # blocks main window while settings window is open
         self.ui.show()
 
 
@@ -161,34 +168,34 @@ class Terminal(QWidget):
         self.terminal_box.setLayout(self.terminal_layout)
 
 
-def window():
-    controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
-                           'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
-                           'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
-                           'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
-                           'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
-                           'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
-                           'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
-                           'active': [1.0, 1.0, 1.0, 1.0, 1.0],
-                           'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
-                           'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
-                           'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
-    n_pumps = len(controller_settings['Kps'])
-    pump_settings = {'baud': '250000',
-                     'waittime': '3000',
-                     'pressure': ['20', '10', '20', '20', '20'],
-                     'speed': ['2000', '2000', '120', '120', '240'],
-                     'volume': ['6000', '-9000', '30', '30', '30'],
-                     'time': ['60', '60', '60', '60', '60'],
-                     'port': 'Test'}
-
-    app = QApplication(sys.argv)
-    win = MainWindow(n_pumps, controller_settings, pump_settings)
-    win.show()  # shows window
-    sys.exit(app.exec_())  # clean exit when we close the window
-
-
-window()
+# def window():
+#     controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1],
+#                            'Kis': [1e-04, 1e-04, 1e-04, 1e-04, 1e-04],
+#                            'Kds': [1e-04, 1e-04, 0.0, 0.001, 0.001],
+#                            'motor_calibs': [4000.0, 4000.0, 4000.0, 4000.0, 4000.0],
+#                            'volume_factors': [642.42426, 369.836, 369.836, 369.836, 369.836],
+#                            'max_steps': [74599.91, 33289.953, 33289.953, 33289.953, 33289.953],
+#                            'max_speeds': [2.75, 2.5, 2.5, 2.5, 2.5],
+#                            'active': [1.0, 1.0, 1.0, 1.0, 1.0],
+#                            'pressure_coeff_as': [0.018, 0.018, 0.018, 0.018, 0.018],
+#                            'pressure_coeff_bs': [0.04, 0.04, 0.04, 0.04, 0.04],
+#                            'sensor_units': [0.0, 0.0, 255.0, 0.0, 0.0]}
+#     n_pumps = len(controller_settings['Kps'])
+#     pump_settings = {'baud': '250000',
+#                      'waittime': '3000',
+#                      'pressure': ['20', '10', '20', '20', '20'],
+#                      'speed': ['2000', '2000', '120', '120', '240'],
+#                      'volume': ['6000', '-9000', '30', '30', '30'],
+#                      'time': ['60', '60', '60', '60', '60'],
+#                      'port': 'Test'}
+#
+#     app = QApplication(sys.argv)
+#     win = MainWindow(n_pumps, controller_settings, pump_settings)
+#     win.show()  # shows window
+#     sys.exit(app.exec_())  # clean exit when we close the window
+#
+#
+# window()
 
 
     # controller_settings = {'Kps': [0.1, 0.1, 0.1, 0.1, 0.1, 0, 0, 0],
