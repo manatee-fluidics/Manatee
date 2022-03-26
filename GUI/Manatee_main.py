@@ -4,7 +4,7 @@ import sys
 import time
 import threading
 import queue
-import start_connection
+import connection_panel
 from PyQt5.QtWidgets import QApplication
 from threading import Thread
 
