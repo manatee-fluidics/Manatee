@@ -1,13 +1,12 @@
-import sys
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel, QGridLayout, QDesktopWidget, \
+from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton, QGridLayout, QDesktopWidget, \
     QHBoxLayout, QGroupBox
 from PyQt5.QtCore import Qt
 
-import connection_panel
 import settings_panel
 import main_window_controls
 import main_window_pumps
+from GUI import main_window_graph
 
 
 class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
@@ -29,7 +28,7 @@ class MainWindow(QMainWindow):  # inherits all properties from QMainWindow class
         self.buttonbar = ButtonBar(self, self.n_pumps, controller_settings)
         self.controls = main_window_controls.Controls(pump_settings)
         self.pump_area = main_window_pumps.PumpArea(self.n_pumps, pump_settings)
-        self.graph = Graph()
+        self.graph = main_window_graph.Graph()
         self.terminal = Terminal()
 
         # add widgets to main window
@@ -129,26 +128,6 @@ class ButtonBar(QWidget):
         self.ui = settings_panel.SettingsPanel(n_pumps, controller_settings)
         self.ui.setWindowModality(Qt.ApplicationModal)  # blocks main window while settings window is open
         self.ui.show()
-
-
-class Graph(QWidget):
-    def __init__(self):
-        super(Graph, self).__init__()
-
-        # define and set QWidget layout
-        layout = QGridLayout()
-        self.setLayout(layout)
-
-        # define and add QGroupBox to QWidget's layout
-        self.graph_box = QGroupBox("Graph")
-        layout.addWidget(self.graph_box)
-
-        # define and set the layout of the QGroupBox
-        self.graph_layout = QHBoxLayout(self)
-        self.graph_box.setLayout(self.graph_layout)
-
-        label = QLabel("GRAPH")
-        self.graph_layout.addWidget(label)
 
 
 class Terminal(QWidget):
