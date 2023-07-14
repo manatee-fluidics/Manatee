@@ -1,142 +1,110 @@
 from PyQt5.QtGui import QDoubleValidator
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QGridLayout, QLineEdit, QHBoxLayout, QCheckBox, QGroupBox
+from PyQt5.QtWidgets import (
+    QWidget, 
+    QPushButton, 
+    QLabel, 
+    QGridLayout, 
+    QLineEdit, 
+    QHBoxLayout, 
+    QCheckBox, 
+    QGroupBox
+)
 from PyQt5.QtCore import Qt
 
-
 class Controls(QWidget):
-    """Creates and defines the Controls box and adds widgets"""
-    def __init__(self, pump_settings):
-        super(Controls, self).__init__()
+    def __init__(self, gui_settings, terminal, GUI_queues):
+        super().__init__()
+        self.setLayout(QGridLayout())
+        self.controls_box = self._create_controls_box(gui_settings, terminal, GUI_queues)
+        self.layout().addWidget(self.controls_box)
 
-        # define and set QWidget layout
-        layout = QGridLayout()
-        self.setLayout(layout)
-
-        # define and add QGroupBox to QWidget's layout
-        self.controls_box = QGroupBox("Controls")
-        layout.addWidget(self.controls_box)
-
-        # define and set the layout of the QGroupBox
-        controls_layout = QHBoxLayout(self)
-        self.controls_box.setLayout(controls_layout)
-
-        # defining widgets
-        self.switches = Switches()
-        self.slaves = Slaves()
-        self.programming = Programming(pump_settings)
-
-        # adding the widgets to the layout
-        controls_layout.addWidget(self.switches)
-        controls_layout.addWidget(self.slaves)
-        controls_layout.addWidget(self.programming)
+    def _create_controls_box(self, gui_settings, terminal, GUI_queues):
+        box = QGroupBox("Controls")
+        layout = QHBoxLayout()
+        box.setLayout(layout)
+        layout.addWidget(Switches(terminal, GUI_queues))
+        layout.addWidget(Slaves(terminal, GUI_queues))
+        layout.addWidget(Programming(gui_settings, terminal, GUI_queues))
+        return box
 
 
-class Switches(QWidget):
-    """Creates and defines the Switches box and its widgets"""
-    def __init__(self):
-        super(Switches, self).__init__()
+class Switches(QGroupBox):
+    def __init__(self, terminal, GUI_queues):
+        super().__init__("Switches")
+        self.GUI_queues = GUI_queues
+        self.terminal = terminal
+        self.setLayout(QHBoxLayout())
+        solenoid_names = ["Solenoid 1", "Solenoid 2", "Solenoid 3"]
+        
+        for name in solenoid_names:
+            self.layout().addWidget(self._create_checkbox(name))
 
-        # define and set QWidget layout
-        layout = QGridLayout()
-        self.setLayout(layout)
+    def _create_checkbox(self, name):
+        box = QCheckBox(name)
+        box.setChecked(False)
 
-        # define and add QGroupBox to QWidget's layout
-        self.switches_box = QGroupBox("Switches")
-        layout.addWidget(self.switches_box)
+        # Connect the stateChanged event to a function
+        box.stateChanged.connect(lambda state, x=name[-1]: self.solenoid_state_changed(x, state))
+        return box
 
-        # define and set the layout of the QGroupBox
-        self.switches_layout = QHBoxLayout(self)
-        self.switches_box.setLayout(self.switches_layout)
+    def solenoid_state_changed(self, solenoid_number, state):
+        """Function to run when the state of a checkbox is changed."""
+        # Convert Qt checkbox state to 0 or 1
+        state = 1 if state == Qt.Checked else 0
 
-        self.box1 = QCheckBox("Solenoid 1")
-        self.box1.setChecked(False)
+        # Send message to GUI queue
+        self.GUI_queues[1].put(["FromGUI_Solenoid", [int(solenoid_number)-1, state]])
+        self.terminal.print_text ("Solenoid %d %d"%(int(solenoid_number)-1, state))
 
-        self.box2 = QCheckBox("Solenoid 2")
-        self.box2.setChecked(False)
+class Slaves(QGroupBox):
+    def __init__(self, terminal, GUI_queues):
+        super().__init__("Slaves")
+        self.terminal = terminal
+        self.setLayout(QHBoxLayout())
+        self.layout().addWidget(self._create_button("Switch slave"))
+        self.layout().addWidget(self._create_button("TTL slave"))
+        self.layout().addWidget(self._create_button("Multipinch slave"))
 
-        self.box3 = QCheckBox("Solenoid 3")
-        self.box3.setChecked(False)
-        # self.box1.stateChanged.connect(lambda: self.btnstate(self.b1))
-        # self.b2.toggled.connect(lambda: self.btnstate(self.b2))
-
-        self.switches_layout.addWidget(self.box1)
-        self.switches_layout.addWidget(self.box2)
-        self.switches_layout.addWidget(self.box3)
-
-
-class Slaves(QWidget):
-    """Creates and defines the Slaves box and its widgets"""
-    def __init__(self):
-        super(Slaves, self).__init__()
-
-        # define and set QWidget layout
-        layout = QGridLayout()
-        self.setLayout(layout)
-
-        # define and add QGroupBox to QWidget's layout
-        self.slaves_box = QGroupBox("Slaves")
-        layout.addWidget(self.slaves_box)
-
-        # define and set the layout of the QGroupBox
-        self.slaves_layout = QHBoxLayout(self)
-        self.slaves_box.setLayout(self.slaves_layout)
-
-        self.button_switch = QPushButton()
-        self.button_switch.setText("Switch slave")
-        self.button_switch.setEnabled(False)
-        # self.button_switch.clicked.connect()
-
-        self.button_ttl = QPushButton()
-        self.button_ttl.setText("TTL slave")
-        self.button_ttl.setEnabled(False)
-        # self.button_ttl.clicked.connect()
-
-        self.button_multipinch = QPushButton()
-        self.button_multipinch.setText("Multipinch slave")
-        self.button_multipinch.setEnabled(False)
-        # self.button_multipinch.clicked.connect()
-
-        self.slaves_layout.addWidget(self.button_switch)
-        self.slaves_layout.addWidget(self.button_ttl)
-        self.slaves_layout.addWidget(self.button_multipinch)
+    def _create_button(self, text):
+        button = QPushButton(text)
+        button.setEnabled(False)
+        return button
 
 
-class Programming(QWidget):
-    """Creates and defines the Programming box and its widgets"""
-    def __init__(self, pump_settings):
-        super(Programming, self).__init__()
+class Programming(QGroupBox):
+    def __init__(self, gui_settings, terminal, GUI_queues):
+        super().__init__("Programming")
+        self.GUI_queues = GUI_queues
+        self.terminal = terminal  # Store the terminal instance
+        self.setLayout(QHBoxLayout())
+        self.layout().addWidget(self._create_label("Wait time (s):"))
+        self.waittime_textbox = self._create_textbox(gui_settings)  # Store the textbox instance
+        self.layout().addWidget(self.waittime_textbox)
+        self.layout().addWidget(self._create_button("Send"))
 
-        # define and set QWidget layout
-        layout = QGridLayout()
-        self.setLayout(layout)
+    def _create_label(self, text):
+        label = QLabel(self)
+        label.setText(text)
+        label.setAlignment(Qt.AlignLeft)
+        return label
 
-        # define and add QGroupBox to QWidget's layout
-        self.programming_box = QGroupBox("Programming")
-        layout.addWidget(self.programming_box)
+    def _create_textbox(self, gui_settings):
+        validator = QDoubleValidator(self)
+        validator.setNotation(QDoubleValidator.ScientificNotation)
+        textbox = QLineEdit()
+        textbox.setValidator(validator)
+        textbox.setText(gui_settings['waittime'])
+        return textbox
 
-        # define and set the layout of the QGroupBox
-        self.programming_layout = QHBoxLayout(self)
-        self.programming_box.setLayout(self.programming_layout)
+    def _create_button(self, text):
+        button = QPushButton(text)
+        button.clicked.connect(self.send_click)  # Connect the button click to the send_click function
+        return button
 
-        self.label = QLabel(self)
-        self.label.setText("Wait time (s):")
-        self.label.setAlignment(Qt.AlignLeft)
+    def send_click(self):
+        """Function to run when the Send button is clicked."""
+        # Get the current value of the waittime textbox
+        waittime = self.waittime_textbox.text()
 
-        self.validator = QDoubleValidator(self)
-        self.validator.setNotation(QDoubleValidator.ScientificNotation)
-        self.textbox = QLineEdit()
-        self.textbox.setValidator(self.validator)
-        self.textbox.setText(self.get_waittime(pump_settings))
-        # adds waittime value from pump_settings dict to textbox
-
-        self.button = QPushButton()
-        self.button.setText("Send")
-        # self.button.clicked.connect()
-
-        self.programming_layout.addWidget(self.label)
-        self.programming_layout.addWidget(self.textbox)
-        self.programming_layout.addWidget(self.button)
-
-    def get_waittime(self, dict):
-        """Processes pump_settings dict and gets waittime value."""
-        return dict['waittime']
+        # Send the waittime to the terminal
+        self.terminal.print_text(f"WaitTime {waittime}")
